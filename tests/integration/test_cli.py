@@ -82,27 +82,31 @@ def test_pipenv_rm(PipenvInstance):
 @pytest.mark.cli
 def test_pipenv_graph(PipenvInstance, pypi):
     with PipenvInstance(pypi=pypi) as p:
-        c = p.pipenv('install requests')
+        c = p.pipenv('install pendulum')
         assert c.ok
         graph = p.pipenv("graph")
         assert graph.ok
-        assert "requests" in graph.out
+        assert "pendulum" in graph.out
         graph_json = p.pipenv("graph --json")
         assert graph_json.ok
-        assert "requests" in graph_json.out
+        assert "pendulum" in graph_json.out
         graph_json_tree = p.pipenv("graph --json-tree")
         assert graph_json_tree.ok
-        assert "requests" in graph_json_tree.out
+        assert "pendulum" in graph_json_tree.out
 
 
 @pytest.mark.cli
 def test_pipenv_graph_reverse(PipenvInstance, pypi):
     with PipenvInstance(pypi=pypi) as p:
-        c = p.pipenv('install requests==2.18.4')
+        c = p.pipenv('install pendulum==1.5.1')
         assert c.ok
         c = p.pipenv('graph --reverse')
         assert c.ok
         output = c.out
+
+        c = p.pipenv('graph --reverse --json')
+        assert c.return_code == 1
+        assert 'Warning: Using both --reverse and --json together is not supported.' in c.err
 
         requests_dependency = [
             ('certifi', 'certifi>=2017.4.17'),
@@ -113,14 +117,10 @@ def test_pipenv_graph_reverse(PipenvInstance, pypi):
 
         for dep_name, dep_constraint in requests_dependency:
             dep_match = re.search(r'^{}==[\d.]+$'.format(dep_name), output, flags=re.MULTILINE)
-            dep_requests_match = re.search(r'^  - requests==2.18.4 \[requires: {}\]$'.format(dep_constraint), output, flags=re.MULTILINE)
+            dep_requests_match = re.search(r'^  - pendulum==1.5.1 \[requires: {}\]$'.format(dep_constraint), output, flags=re.MULTILINE)
             assert dep_match is not None
             assert dep_requests_match is not None
             assert dep_requests_match.start() > dep_match.start()
-
-        c = p.pipenv('graph --reverse --json')
-        assert c.return_code == 1
-        assert 'Warning: Using both --reverse and --json together is not supported.' in c.err
 
 
 @pytest.mark.cli
