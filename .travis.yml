@@ -11,6 +11,8 @@ env:
     - PYTHONIOENCODING='utf-8'
   matrix:
     - TEST_SUITE='not install'
+      NO_INTERNET='true'
+      PYTEST_ADDOPTS='--instafail --with-detecthttp'
     - TEST_SUITE='install'
       NO_INTERNET='true'
       PYTEST_ADDOPTS='--cache-clear --instafail --with-detecthttp'
