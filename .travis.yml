@@ -16,6 +16,8 @@ env:
     - TEST_SUITE='install'
       NO_INTERNET='true'
       PYTEST_ADDOPTS='--cache-clear --instafail --with-detecthttp'
+    - TEST_SUITE='not install'
+      PYTEST_ADDOPTS='--instafail --with-detecthttp'
 
 install:
   - "pip install --upgrade pip"
