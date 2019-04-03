@@ -82,23 +82,23 @@ def test_pipenv_rm(PipenvInstance):
 @pytest.mark.cli
 def test_pipenv_graph(PipenvInstance, pypi):
     with PipenvInstance(pypi=pypi) as p:
-        c = p.pipenv('install pendulum')
+        c = p.pipenv('install tablib')
         assert c.ok
         graph = p.pipenv("graph")
         assert graph.ok
-        assert "pendulum" in graph.out
+        assert "tablib" in graph.out
         graph_json = p.pipenv("graph --json")
         assert graph_json.ok
-        assert "pendulum" in graph_json.out
+        assert "tablib" in graph_json.out
         graph_json_tree = p.pipenv("graph --json-tree")
         assert graph_json_tree.ok
-        assert "pendulum" in graph_json_tree.out
+        assert "tablib" in graph_json_tree.out
 
 
 @pytest.mark.cli
 def test_pipenv_graph_reverse(PipenvInstance, pypi):
     with PipenvInstance(pypi=pypi) as p:
-        c = p.pipenv('install pendulum==1.5.1')
+        c = p.pipenv('install tablib==0.13.0')
         assert c.ok
         c = p.pipenv('graph --reverse')
         assert c.ok
@@ -109,17 +109,31 @@ def test_pipenv_graph_reverse(PipenvInstance, pypi):
         assert 'Warning: Using both --reverse and --json together is not supported.' in c.err
 
         requests_dependency = [
-            ('certifi', 'certifi>=2017.4.17'),
-            ('chardet', 'chardet(>=3.0.2,<3.1.0|<3.1.0,>=3.0.2)'),
-            ('idna', 'idna(>=2.5,<2.7|<2.7,>=2.5)'),
-            ('urllib3', 'urllib3(>=1.21.1,<1.23|<1.23,>=1.21.1)')
+            ('backports.csv', 'backports.csv'),
+            ('odfpy', 'odfpy'),
+            ('openpyxl', 'openpyxl>=2.4.0'),
+            ('pyyaml', 'pyyaml'),
+            ('xlrd', 'xlrd'),
+            ('xlwt', 'xlwt'),
         ]
 
         for dep_name, dep_constraint in requests_dependency:
-            dep_match = re.search(r'^{}==[\d.]+$'.format(dep_name), output, flags=re.MULTILINE)
-            dep_requests_match = re.search(r'^  - pendulum==1.5.1 \[requires: {}\]$'.format(dep_constraint), output, flags=re.MULTILINE)
-            assert dep_match is not None
-            assert dep_requests_match is not None
+            pat = r'^[ -]*{}==[\d.]+'.format(dep_name)
+            dep_match = re.search(pat, output, flags=re.MULTILINE)
+            assert dep_match is not None, '{} not found in {}'.format(pat, output)
+
+            # openpyxl should be indented
+            if dep_name == 'openpyxl':
+                openpyxl_dep = re.search(r'^openpyxl', output, flags=re.MULTILINE)
+                assert openpyxl_dep is None, 'openpyxl should not appear at begining of lines in {}'.format(output)
+
+                assert '  - openpyxl==2.5.4 [requires: et-xmlfile]' in output
+            else:
+                dep_match = re.search(r'^[ -]*{}==[\d.]+$'.format(dep_name), output, flags=re.MULTILINE)
+                assert dep_match is not None, '{} not found at beginning of line in {}'.format(dep_name, output)
+
+            dep_requests_match = re.search(r'^ +- tablib==0.13.0 \[requires: {}\]$'.format(dep_constraint), output, flags=re.MULTILINE)
+            assert dep_requests_match is not None, 'constraint {} not found in {}'.format(dep_constraint, output)
             assert dep_requests_match.start() > dep_match.start()
 
 
