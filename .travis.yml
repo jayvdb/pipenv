@@ -12,12 +12,13 @@ env:
   matrix:
     - TEST_SUITE='not install'
     - TEST_SUITE='install'
-      PYTEST_ADDOPTS='--cache-clear --instafail'
+      NO_INTERNET='true'
+      PYTEST_ADDOPTS='--cache-clear --instafail --with-detecthttp'
 
 install:
   - "pip install --upgrade pip"
   - "pip install -e . --upgrade --upgrade-strategy=only-if-needed"
-  - pip install pytest-instafail
+  - pip install pytest-instafail nose-detecthttp
   - "pipenv install --dev"
   - 'pip install -e "$(pwd)" --upgrade'
   - 'pipenv install --system --dev'

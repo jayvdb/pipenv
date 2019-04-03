@@ -34,6 +34,9 @@ def try_internet(url="http://httpbin.org/ip", timeout=1.5):
 
 
 def check_internet():
+    if os.environ.get('NO_INTERNET', 'false') == 'true':
+        return False
+
     has_internet = False
     for url in ("http://httpbin.org/ip", "http://clients3.google.com/generate_204"):
         try:
