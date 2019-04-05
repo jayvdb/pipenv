@@ -98,24 +98,21 @@ def test_mirror_uninstall(PipenvInstance, pypi):
 @pytest.mark.uninstall
 @pytest.mark.install
 def test_uninstall_all_local_files(PipenvInstance, testsroot):
-    file_name = "Django-1.11.13.tar.gz"
+    file_name = "tablib-0.12.1.tar.gz"
     # Not sure where travis/appveyor run tests from
-    source_path = os.path.abspath(os.path.join(testsroot, "pypi", "django", file_name))
+    source_path = os.path.abspath(os.path.join(testsroot, "pypi", "tablib", file_name))
 
     with PipenvInstance(chdir=True) as p:
         shutil.copy(source_path, os.path.join(p.path, file_name))
-        os.mkdir(os.path.join(p.path, "django"))
-        with temp_environ():
-            from vistir.compat import fs_str
-            os.environ['LANG'] = fs_str('en_US.UTF-8')
-            c = p.pipenv("install {}".format(file_name))
+        os.mkdir(os.path.join(p.path, "tablib"))
+        c = p.pipenv("install {}".format(file_name))
         assert c.return_code == 0
         c = p.pipenv("uninstall --all")
         assert c.return_code == 0
-        assert "Django" in c.out
+        assert "tablib" in c.out
         # Uninstall --all is not supposed to remove things from the pipfile
         # Note that it didn't before, but that instead local filenames showed as hashes
-        assert "django" in p.pipfile["packages"]
+        assert "tablib" in p.pipfile["packages"]
 
 
 @pytest.mark.run
